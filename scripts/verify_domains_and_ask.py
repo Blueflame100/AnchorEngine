@@ -147,7 +147,10 @@ def test_ask_404_and_no_crash():
 
     # Hit a real domain; without valid API key/model the Grok client may raise — we only require domain lookup and adapter path don't crash
     try:
-        r2 = client.post("/ask", json={"domain_id": "example", "question": "Hello"})
+        # Use first available domain (e.g. iam, example, security)
+        domains = client.get("/domains").json()
+        domain_id = domains[0]["domain_id"] if domains else "example"
+        r2 = client.post("/ask", json={"domain_id": domain_id, "question": "Hello"})
         assert r2.status_code in (200, 500, 502, 503), (
             f"Unexpected status for /ask example: {r2.status_code}"
         )
