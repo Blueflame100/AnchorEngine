@@ -1,5 +1,6 @@
 """xAI Grok API client (OpenAI-compatible)."""
 
+import os
 from typing import Optional
 
 from openai import OpenAI
@@ -14,11 +15,22 @@ class GrokClient:
         self,
         api_key: Optional[str] = None,
         base_url: str = "https://api.x.ai/v1",
+        use_mock: Optional[bool] = None,
     ):
-        self._client = OpenAI(
+        self._use_mock = use_mock if use_mock is not None else (
+            os.getenv("USE_MOCK_LLM", "").lower() == "true"
+        )
+        self._client = None if self._use_mock else OpenAI(
             api_key=api_key or "",
             base_url=base_url,
         )
+
+    def _mock_chat(self, user_message: str) -> str:
+        """Deterministic mock for grounding tests."""
+        has_context = "[1]" in user_message and "No relevant context" not in user_message
+        if not has_context:
+            return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
+        return '{"answer":"Based on the provided context, access keys must be rotated every 90 days.","confidence":"high","citations":[{"excerpt_id":1,"source":"policy.txt","snippet":"Access keys must be rotated every 90 days."}]}'
 
     def chat(
         self,
@@ -30,6 +42,9 @@ class GrokClient:
         Send a chat completion request to Grok.
         Uses domain's model and system prompt unless overridden.
         """
+        if self._use_mock:
+            return self._mock_chat(user_message)
+
         system_content = system_override if system_override is not None else domain.system_prompt
         messages = []
         if system_content:

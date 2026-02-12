@@ -1,6 +1,6 @@
 # Config-driven Grok Demo Engine
 
-FastAPI service that loads domain configs from YAML and answers questions via xAI Grok, with optional RAG context.
+FastAPI service that loads domain configs from YAML and answers questions via xAI Grok, with optional RAG context and hallucination mitigation.
 
 ## Setup
 
@@ -23,21 +23,33 @@ GROK_API_KEY=your_xai_api_key
 From repo root (so `configs/` is found):
 
 ```bash
-PYTHONPATH=src uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Or from `src`:
-
-```bash
-cd src && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+PYTHONPATH=src uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 - **GET /domains** — list domains from `configs/*.yaml`
-- **POST /ask** — body: `{"domain_id": "example", "question": "Your question"}`
+- **POST /ask** — body: `{"domain_id": "iam", "question": "Your question"}`
+
+## Hallucination Mitigation
+
+When RAG is enabled, the pipeline enforces strict grounding to reduce hallucinations:
+
+1. **Context-only answers** — The model is instructed to answer only from retrieved excerpts; otherwise it must refuse with "I don't know based on the provided documents."
+2. **Mandatory citations** — Every factual statement must cite an excerpt by `excerpt_id` (numbered [1], [2], …). Missing citations trigger refusal.
+3. **Structured JSON output** — Responses follow `{answer, confidence, citations}`; the model outputs no markdown or extra text.
+4. **Post-hoc grounding checks** — Code validates that cited excerpt IDs exist; invalid or empty citations are replaced with a safe refusal response.
+5. **Invalid JSON fallback** — If the model returns invalid JSON, the response is replaced with a safe refusal.
+
+RAG responses always return `{answer, confidence, citations}`. Set `USE_MOCK_LLM=true` for deterministic mock behavior in tests.
+
+## Tests
+
+```bash
+PYTHONPATH=src pytest tests/ -v
+```
 
 ## Layout
 
-- **core** — domain loader (YAML), RAG engine, Grok client
+- **core** — domain loader (YAML), RAG engine, Grok client, grounding module
 - **domains** — domain adapters and registry
 - **api** — FastAPI routes
-- **configs** — one YAML per domain (id, name, system_prompt, model, documents_path, etc.)
+- **configs** — one YAML per domain (domain_id, data_dir, system_prompt, RAG settings, etc.)

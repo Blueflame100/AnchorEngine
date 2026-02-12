@@ -224,14 +224,18 @@ class RAGEngine:
 
     def retrieve(self, domain: DomainConfig, query: str) -> list[str]:
         """Return top_k relevant chunks for the query (semantic search)."""
+        results = self.retrieve_with_sources(domain, query)
+        return [r["text"] for r in results]
+
+    def retrieve_with_sources(self, domain: DomainConfig, query: str) -> list[dict]:
+        """Return top_k chunks with source metadata: [{source, text, score}, ...]."""
         if not domain.rag.enabled:
             return []
         store = self._get_store(domain)
         if store is None:
             return []
         top_k = domain.rag.retrieval.top_k
-        results = store.query(query, top_k=top_k)
-        return [r["text"] for r in results]
+        return store.query(query, top_k=top_k)
 
     def build_context(self, domain: DomainConfig, query: str) -> str:
         """Build a single context string from retrieved chunks."""
