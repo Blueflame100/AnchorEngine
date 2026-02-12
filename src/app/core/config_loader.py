@@ -58,7 +58,7 @@ class DomainConfig(BaseModel):
     rag: RAGConfig = Field(default_factory=RAGConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
     # Legacy fields for backward compatibility (mapped from old configs)
-    model: str = Field(default="grok-2-1212", description="xAI model name")
+    model: str = Field(default="grok-4-latest", description="xAI model name")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
 

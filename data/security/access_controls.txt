@@ -1,0 +1,14 @@
+Security Access Control Standards
+
+Multi-factor authentication (MFA) is mandatory for all production systems and administrative accounts.
+
+Principle of least privilege: Users should only have access to resources necessary for their role.
+
+Access reviews must be conducted quarterly for all privileged accounts and annually for standard accounts.
+
+Failed authentication attempts:
+- 3 failures: Account locked for 15 minutes
+- 5 failures: Account locked for 1 hour
+- 10 failures: Account requires manual unlock by administrator
+
+All access changes must be logged and auditable. Privileged access sessions must be recorded and reviewed monthly.

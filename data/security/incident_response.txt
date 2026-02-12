@@ -1,0 +1,17 @@
+Security Incident Response Procedures
+
+All security incidents must be reported within 1 hour of detection to the Security Operations Center (SOC).
+
+Severity levels:
+- Critical: Active data breach or system compromise
+- High: Unauthorized access detected
+- Medium: Suspicious activity requiring investigation
+- Low: Policy violations or minor anomalies
+
+Response timeline:
+- Critical: Immediate containment within 15 minutes
+- High: Containment within 1 hour
+- Medium: Investigation within 4 hours
+- Low: Review within 24 hours
+
+Post-incident review must be completed within 7 days and include root cause analysis and remediation steps.

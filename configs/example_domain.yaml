@@ -1,5 +1,5 @@
-domain_id: example
-display_name: Example Demo
+domain_id: iam
+display_name: IAM Policy Assistant
 description: A sample domain for the Grok demo engine.
 data_dir: data/iam
 system_prompt: |

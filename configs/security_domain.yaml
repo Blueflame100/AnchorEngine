@@ -1,0 +1,29 @@
+domain_id: security
+display_name: Security Operations
+description: Security policies, incident response procedures, and vulnerability management guidelines.
+
+system_prompt: |
+  You are a security operations assistant. Provide accurate information based on security policies and procedures.
+  When answering questions about incidents, vulnerabilities, or access controls, cite specific policy requirements.
+
+user_prompt_template: |
+  Security Question: {question}
+  
+  Relevant Security Documentation:
+  {context}
+  
+  Please provide a clear answer based on the security policies above.
+
+data_dir: data/security
+
+rag:
+  enabled: true
+  chunking:
+    method: paragraph
+    max_chars: 800
+    overlap: 100
+  retrieval:
+    top_k: 4
+
+output:
+  format: text

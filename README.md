@@ -10,11 +10,13 @@ source .venv/bin/activate   # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-Optional: create `.env` with your xAI API key:
+Optional: create a `.env` file in the **project root** (same folder as `configs/`). The app loads it from there no matter where you start the server. Use exactly:
 
 ```
 GROK_API_KEY=your_xai_api_key
 ```
+
+(No spaces around `=`. You can also set `GROK_API_KEY` in your shell environment.)
 
 ## Run
 
