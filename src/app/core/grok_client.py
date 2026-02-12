@@ -59,6 +59,7 @@ class GrokClient:
         domain: DomainConfig,
         user_message: str,
         system_override: Optional[str] = None,
+        model_override: Optional[str] = None,
     ) -> str:
         """
         Send a chat completion request to Grok.
@@ -73,8 +74,9 @@ class GrokClient:
             messages.append({"role": "system", "content": system_content})
         messages.append({"role": "user", "content": user_message})
 
+        model = model_override if model_override else domain.model
         response = self._client.chat.completions.create(
-            model=domain.model,
+            model=model,
             messages=messages,
             temperature=domain.temperature,
             max_tokens=domain.max_tokens,

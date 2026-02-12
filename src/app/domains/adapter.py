@@ -1,7 +1,7 @@
 """Domain-specific adapters: combine config, RAG context, and Grok."""
 
 import json
-from typing import Any
+from typing import Any, Optional
 
 from src.app.core import DomainConfig, GrokClient, RAGEngine
 from src.app.core.grounding import (
@@ -30,7 +30,12 @@ class DomainAdapter:
         self._grok = grok_client
         self._rag = rag_engine
 
-    def ask(self, question: str, include_rag_context: bool = True) -> str | dict[str, Any]:
+    def ask(
+        self,
+        question: str,
+        include_rag_context: bool = True,
+        model_override: Optional[str] = None,
+    ) -> str | dict[str, Any]:
         """
         Answer a question in this domain.
         When RAG is enabled: uses numbered excerpts, strict grounding, JSON output,
@@ -38,10 +43,12 @@ class DomainAdapter:
         When RAG is disabled: returns text or JSON per output.format.
         """
         if include_rag_context and self.config.rag.enabled:
-            return self._ask_with_grounding(question)
-        return self._ask_without_rag(question)
+            return self._ask_with_grounding(question, model_override=model_override)
+        return self._ask_without_rag(question, model_override=model_override)
 
-    def _ask_with_grounding(self, question: str) -> dict[str, Any]:
+    def _ask_with_grounding(
+        self, question: str, model_override: Optional[str] = None
+    ) -> dict[str, Any]:
         """RAG path: numbered excerpts, grounding prompts, JSON, validation."""
         excerpts = self._rag.retrieve_with_sources(self.config, question)
         num_excerpts = len(excerpts)
@@ -56,11 +63,14 @@ class DomainAdapter:
             domain=self.config,
             user_message=user_message,
             system_override=system_prompt,
+            model_override=model_override,
         )
 
         return parse_and_validate_response(response_text, num_excerpts)
 
-    def _ask_without_rag(self, question: str) -> str | dict[str, Any]:
+    def _ask_without_rag(
+        self, question: str, model_override: Optional[str] = None
+    ) -> str | dict[str, Any]:
         """Non-RAG path: legacy behavior (template-based, text or json)."""
         context = "No relevant context available."
         user_message = self.config.user_prompt_template.format(
@@ -72,6 +82,7 @@ class DomainAdapter:
             domain=self.config,
             user_message=user_message,
             system_override=self.config.system_prompt,
+            model_override=model_override,
         )
 
         if self.config.output.format == "json":

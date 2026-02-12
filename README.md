@@ -96,6 +96,16 @@ PYTHONPATH=src python scripts/eval_domain.py --domain_id iam --limit 20
 
 Uses `eval/<domain_id>.jsonl` (each line: `{"question": "...", "should_refuse": bool}`). Runs in `USE_MOCK_LLM=true` mode.
 
+### Model evaluation
+
+Per-domain benchmarks across 3 Grok variants plus non-RAG baseline:
+
+```bash
+PYTHONPATH=src python scripts/eval_models.py [--domains iam,security] [--mock]
+```
+
+Variants: `grok-4-latest`, `grok-4-fast-reasoning`, `grok-3-mini`, and `non-rag (grok-4-latest)`. Use `--mock` for deterministic runs without API calls. Requires `GROK_API_KEY` for real model evaluation.
+
 ## Layout
 
 - **core** — domain loader (YAML), RAG engine, Grok client, grounding module

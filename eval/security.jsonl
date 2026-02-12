@@ -1,0 +1,4 @@
+{"question": "Is MFA required for production systems?", "should_refuse": false}
+{"question": "How many failed auth attempts before 1-hour lockout?", "should_refuse": false}
+{"question": "What is the meaning of life?", "should_refuse": true}
+{"question": "How often are access reviews required for privileged accounts?", "should_refuse": false}
