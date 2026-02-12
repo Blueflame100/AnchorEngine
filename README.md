@@ -2,6 +2,11 @@
 
 FastAPI service that loads domain configs from YAML and answers questions via xAI Grok, with optional RAG context and hallucination mitigation.
 
+**Architecture**
+- Docs are chunked and embedded into an in-memory Chroma index (sentence-transformers).
+- At query time, top-k chunks are retrieved and passed into Grok with grounding prompts.
+- Output is validated for citations and schema; unsupported responses are replaced with a safe refusal.
+
 ## Setup
 
 ```bash
