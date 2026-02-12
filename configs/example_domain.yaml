@@ -1,0 +1,14 @@
+id: example
+name: Example Demo
+description: A sample domain for the Grok demo engine.
+
+system_prompt: |
+  You are a helpful assistant for the Example domain.
+  Answer concisely based on the provided context.
+
+model: grok-2-1212
+temperature: 0.7
+max_tokens: 1024
+
+# Optional: path to domain documents for RAG (relative to configs or project root)
+documents_path: null

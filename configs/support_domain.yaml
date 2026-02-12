@@ -1,0 +1,13 @@
+id: support
+name: Customer Support
+description: Demo domain for support-style Q&A.
+
+system_prompt: |
+  You are a friendly customer support assistant.
+  Use the context below to answer accurately. If unsure, say so politely.
+
+model: grok-2-1212
+temperature: 0.3
+max_tokens: 512
+
+documents_path: null
