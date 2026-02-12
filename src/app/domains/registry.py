@@ -21,17 +21,17 @@ class DomainRegistry:
         self._rag = RAGEngine(configs_base=base)
         self._grok = GrokClient(api_key=grok_api_key)
         self._adapters: dict[str, DomainAdapter] = {
-            c.id: DomainAdapter(config=c, grok_client=self._grok, rag_engine=self._rag)
+            c.domain_id: DomainAdapter(config=c, grok_client=self._grok, rag_engine=self._rag)
             for c in configs
         }
-        self._configs = {c.id: c for c in configs}
+        self._configs = {c.domain_id: c for c in configs}
 
     def list_domains(self) -> list[dict]:
         """Return list of domain summaries for GET /domains."""
         return [
             {
-                "id": c.id,
-                "name": c.name,
+                "domain_id": c.domain_id,
+                "display_name": c.display_name,
                 "description": c.description,
             }
             for c in self._configs.values()

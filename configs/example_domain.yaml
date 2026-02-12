@@ -1,14 +1,27 @@
-id: example
-name: Example Demo
+domain_id: example
+display_name: Example Demo
 description: A sample domain for the Grok demo engine.
 
 system_prompt: |
   You are a helpful assistant for the Example domain.
   Answer concisely based on the provided context.
 
-model: grok-2-1212
-temperature: 0.7
-max_tokens: 1024
+user_prompt_template: |
+  Question: {question}
+  
+  Context:
+  {context}
 
-# Optional: path to domain documents for RAG (relative to configs or project root)
-documents_path: null
+data_dir: null
+
+rag:
+  enabled: true
+  chunking:
+    method: paragraph
+    max_chars: 1000
+    overlap: 100
+  retrieval:
+    top_k: 5
+
+output:
+  format: text

@@ -19,7 +19,7 @@ class AskResponse(BaseModel):
     """Response for POST /ask."""
 
     domain_id: str
-    answer: str
+    answer: str | dict  # Can be text or JSON dict based on output.format
 
 
 @router.get("/domains")

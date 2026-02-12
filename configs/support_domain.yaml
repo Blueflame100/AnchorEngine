@@ -1,13 +1,29 @@
-id: support
-name: Customer Support
+domain_id: support
+display_name: Customer Support
 description: Demo domain for support-style Q&A.
 
 system_prompt: |
   You are a friendly customer support assistant.
   Use the context below to answer accurately. If unsure, say so politely.
 
-model: grok-2-1212
-temperature: 0.3
-max_tokens: 512
+user_prompt_template: |
+  Customer Question: {question}
+  
+  Knowledge Base Context:
+  {context}
+  
+  Please provide a helpful answer based on the context above.
 
-documents_path: null
+data_dir: null
+
+rag:
+  enabled: true
+  chunking:
+    method: paragraph
+    max_chars: 800
+    overlap: 50
+  retrieval:
+    top_k: 3
+
+output:
+  format: text
