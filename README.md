@@ -29,6 +29,13 @@ PYTHONPATH=src uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 - **GET /domains** — list domains from `configs/*.yaml`
 - **POST /ask** — body: `{"domain_id": "iam", "question": "Your question"}`
 
+## Add a new domain
+
+1. Create `configs/<domain>.yaml`
+2. Add docs to `data/<domain>/`
+3. Restart server
+4. Call `/ask` with `domain_id=<domain_id>`
+
 ## Docker
 
 Reproducible run via Docker (uses mock LLM by default):
