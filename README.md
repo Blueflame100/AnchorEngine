@@ -29,6 +29,35 @@ PYTHONPATH=src uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 - **GET /domains** — list domains from `configs/*.yaml`
 - **POST /ask** — body: `{"domain_id": "iam", "question": "Your question"}`
 
+## Docker
+
+Reproducible run via Docker (uses mock LLM by default):
+
+```bash
+docker compose up --build
+```
+
+Swagger UI: http://localhost:8000/docs
+
+```bash
+# List domains
+curl http://localhost:8000/domains
+
+# Ask a question (mock mode returns deterministic answers)
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"domain_id": "iam", "question": "How often should access keys be rotated?"}'
+```
+
+To use real Grok instead of the mock: create a `.env` in the project root with:
+
+```
+USE_MOCK_LLM=false
+GROK_API_KEY=your_xai_api_key
+```
+
+Then run `docker compose up --build`. Compose loads `.env` for variable substitution.
+
 ## Hallucination Mitigation
 
 When RAG is enabled, the pipeline enforces strict grounding to reduce hallucinations:

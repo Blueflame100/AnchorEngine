@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      USE_MOCK_LLM: "${USE_MOCK_LLM:-true}"
+      GROK_API_KEY: "${GROK_API_KEY:-}"
+      XAI_API_KEY: "${XAI_API_KEY:-}"

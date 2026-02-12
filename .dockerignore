@@ -1,0 +1,19 @@
+# Virtual env and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Env (loaded at runtime via compose)
+.env
+.env.local
+
+# Dev/test
+tests/
