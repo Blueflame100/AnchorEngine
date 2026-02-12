@@ -1,0 +1,12 @@
+Logging and Monitoring Policy
+
+All production services must emit structured logs (JSON) with request_id, user_id, and error_code.
+
+Logs must be retained for 30 days in hot storage and 365 days in archive storage.
+
+PII must be redacted before writing logs.
+
+Critical alerts:
+- p95 latency > 300ms
+- error rate > 2%
+- authentication failures > 1% of requests
