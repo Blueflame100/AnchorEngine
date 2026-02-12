@@ -1,7 +1,7 @@
 domain_id: support
 display_name: Customer Support
 description: Demo domain for support-style Q&A.
-
+data_dir: data/iam
 system_prompt: |
   You are a friendly customer support assistant.
   Use the context below to answer accurately. If unsure, say so politely.
@@ -13,8 +13,6 @@ user_prompt_template: |
   {context}
   
   Please provide a helpful answer based on the context above.
-
-data_dir: null
 
 rag:
   enabled: true

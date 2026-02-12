@@ -1,7 +1,7 @@
 domain_id: example
 display_name: Example Demo
 description: A sample domain for the Grok demo engine.
-
+data_dir: data/iam
 system_prompt: |
   You are a helpful assistant for the Example domain.
   Answer concisely based on the provided context.
@@ -11,8 +11,6 @@ user_prompt_template: |
   
   Context:
   {context}
-
-data_dir: null
 
 rag:
   enabled: true
