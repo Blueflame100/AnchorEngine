@@ -1,0 +1,4 @@
+{"question": "How often should access keys be rotated?", "should_refuse": false}
+{"question": "What is the meaning of life?", "should_refuse": true}
+{"question": "What are the logging retention requirements?", "should_refuse": false}
+{"question": "What is the password reset policy?", "should_refuse": true}

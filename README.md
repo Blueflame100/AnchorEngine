@@ -47,6 +47,14 @@ RAG responses always return `{answer, confidence, citations}`. Set `USE_MOCK_LLM
 PYTHONPATH=src pytest tests/ -v
 ```
 
+## Eval
+
+```bash
+PYTHONPATH=src python scripts/eval_domain.py --domain_id iam --limit 20
+```
+
+Uses `eval/<domain_id>.jsonl` (each line: `{"question": "...", "should_refuse": bool}`). Runs in `USE_MOCK_LLM=true` mode.
+
 ## Layout
 
 - **core** — domain loader (YAML), RAG engine, Grok client, grounding module

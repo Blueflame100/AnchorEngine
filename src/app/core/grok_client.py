@@ -26,9 +26,14 @@ class GrokClient:
         )
 
     def _mock_chat(self, user_message: str) -> str:
-        """Deterministic mock for grounding tests."""
+        """Deterministic mock for grounding tests and eval."""
         has_context = "[1]" in user_message and "No relevant context" not in user_message
         if not has_context:
+            return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
+        # Out-of-domain questions: refuse (for eval should_refuse=True)
+        q = user_message.split("Question:")[-1].split("\n")[0].lower() if "Question:" in user_message else ""
+        refuse_phrases = ("meaning of life", "password reset", "what is the meaning")
+        if any(p in q for p in refuse_phrases):
             return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
         return '{"answer":"Based on the provided context, access keys must be rotated every 90 days.","confidence":"high","citations":[{"excerpt_id":1,"source":"policy.txt","snippet":"Access keys must be rotated every 90 days."}]}'
 
