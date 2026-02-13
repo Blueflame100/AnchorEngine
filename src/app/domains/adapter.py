@@ -8,6 +8,8 @@ from src.app.core.grounding import (
     build_grounding_prompts,
     parse_and_validate_response,
     _build_numbered_context,
+    is_ambiguous_question,
+    CLARIFICATION_RESPONSE,
     REFUSAL_MSG,
     SAFE_REFUSAL_RESPONSE,
 )
@@ -50,6 +52,8 @@ class DomainAdapter:
         self, question: str, model_override: Optional[str] = None
     ) -> dict[str, Any]:
         """RAG path: numbered excerpts, grounding prompts, JSON, validation."""
+        if is_ambiguous_question(question):
+            return CLARIFICATION_RESPONSE.copy()
         excerpts = self._rag.retrieve_with_sources(self.config, question)
         num_excerpts = len(excerpts)
 

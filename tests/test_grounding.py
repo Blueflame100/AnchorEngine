@@ -44,10 +44,31 @@ def test_refusal_when_no_context():
     engine = _MockRAGEngine(excerpts=[])  # No context
     adapter = DomainAdapter(config=config, grok_client=mock_grok, rag_engine=engine)
 
-    result = adapter.ask("What is X?")
+    result = adapter.ask("What is the access key rotation policy?")
 
     assert isinstance(result, dict)
     assert result["answer"] == REFUSAL_MSG
+    assert result["confidence"] == "low"
+    assert result["citations"] == []
+
+
+def test_clarification_when_ambiguous():
+    """When question is ambiguous (e.g. 'how many minutes?'), ask for clarification."""
+    os.environ["USE_MOCK_LLM"] = "true"
+    config = DomainConfig(
+        domain_id="test",
+        display_name="Test",
+        data_dir="data/iam",
+        rag=RAGConfig(enabled=True),
+    )
+    mock_grok = GrokClient(use_mock=True)
+    engine = _MockRAGEngine(excerpts=[{"source": "policy.txt", "text": "Lockout: 15 min.", "score": 0.9}])
+    adapter = DomainAdapter(config=config, grok_client=mock_grok, rag_engine=engine)
+
+    result = adapter.ask("how many minutes?")
+
+    assert isinstance(result, dict)
+    assert "clarify" in result["answer"].lower()
     assert result["confidence"] == "low"
     assert result["citations"] == []
 

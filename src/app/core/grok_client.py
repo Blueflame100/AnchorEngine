@@ -27,6 +27,54 @@ class GrokClient:
             base_url=base_url,
         )
 
+    def _mock_format_answer(self, text: str, q_words: set[str]) -> str:
+        """Format excerpt as concise prose, not a raw document dump."""
+        # Find section whose header directly matches the question (e.g. "Severity levels:" for "severity levels")
+        lines = [l for l in text.split("\n") if l.strip()]
+        sections: list[tuple[str, list[str]]] = []  # (header, content lines)
+        current_header = ""
+        current_lines: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            if re.match(r"^[A-Za-z][^:]*:\s*$", stripped):
+                if current_lines:
+                    sections.append((current_header, current_lines))
+                current_header = stripped.lower()
+                current_lines = [stripped]
+            else:
+                current_lines.append(stripped)
+        if current_lines:
+            sections.append((current_header, current_lines))
+        # Prefer section whose header contains the most question words (direct match)
+        best = sections[0] if sections else ("", [])
+        best_header_score = 0
+        for header, content in sections:
+            score = sum(1 for w in q_words if w in header)
+            if score > best_header_score:
+                best_header_score = score
+                best = (header, content)
+        target = "\n".join(best[1]) if best[1] else text
+        # When section header matched, keep full content. Otherwise filter to relevant lines only.
+        if best_header_score == 0 and q_words:
+            # No matching header: only include lines with 2+ question-word matches (avoids "access" matching everything)
+            target_lines = [
+                line for line in target.split("\n")
+                if line.strip() and sum(1 for w in q_words if w in line.lower()) >= 2
+            ]
+            if target_lines:
+                target = "\n".join(target_lines)
+        # Convert bullet list to inline: "- X: Y" -> "X (Y); "
+        parts = []
+        for line in target.split("\n"):
+            m = re.match(r"^[\-\*]?\s*(.+?):\s*(.+)$", line.strip())
+            if m:
+                parts.append(f"{m.group(1).strip()} ({m.group(2).strip()})")
+            elif line.strip() and not line.strip().endswith(":"):
+                parts.append(line.strip())
+        prose = "; ".join(parts) if parts else target.replace("\n", " ").strip()
+        prose = re.sub(r"\s+", " ", prose)
+        return f"Based on the provided context, {prose}" if prose else f"Based on the provided context, {text[:200].replace(chr(10), ' ')}"
+
     def _mock_chat(self, user_message: str) -> str:
         """Deterministic mock for grounding tests and eval. Derives answer from context."""
         has_context = "[1]" in user_message and "No relevant context" not in user_message
@@ -37,19 +85,51 @@ class GrokClient:
         refuse_phrases = ("meaning of life", "password reset", "what is the meaning")
         if any(p in q for p in refuse_phrases):
             return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
-        # Derive answer from first excerpt so responses match the actual domain's context
-        m = re.search(r"\[1\] \(source: ([^)]+)\)\s*\n(.*?)(?=\n\[2\]|\n\n\n|\Z)", user_message, re.DOTALL)
-        if m:
-            source = m.group(1).strip()
-            text = m.group(2).strip()[:200]
-            snippet = text[:80] + "..." if len(text) > 80 else text
+        # Parse all excerpts and pick the one that best matches the question
+        excerpt_pattern = re.compile(
+            r"\[(\d+)\] \(source: ([^)]+)\)\s*\n(.*?)(?=\n\n\[\d+\]|\Z)",
+            re.DOTALL,
+        )
+        excerpts = [
+            {"id": int(m.group(1)), "source": m.group(2).strip(), "text": m.group(3).strip()}
+            for m in excerpt_pattern.finditer(user_message)
+        ]
+        if not excerpts:
+            pass  # fall through to fallback
+        else:
+            # Pick excerpt with most question-word matches (case-insensitive)
+            q_words = {w.lower() for w in re.findall(r"\w+", q) if len(w) > 2}
+            best = excerpts[0]
+            best_score = 0
+            for ex in excerpts:
+                ex_lower = ex["text"].lower()
+                score = sum(1 for w in q_words if w in ex_lower)
+                if score > best_score:
+                    best_score = score
+                    best = ex
+            # No excerpt matches the question -> out-of-domain, refuse
+            if best_score == 0 and q_words:
+                return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
+            # Question asks about consequences but excerpt doesn't state them -> refuse
+            consequence_phrases = ("what happens if", "what if", "what happens when", "consequences of")
+            if any(p in q for p in consequence_phrases):
+                ex_lower = best["text"].lower()
+                consequence_words = ("consequence", "penalty", "violation", "revoke", "suspend", "expire", "fail", "happen", "result")
+                if not any(w in ex_lower for w in consequence_words):
+                    return '{"answer":"I don\\u2019t know based on the provided documents.","confidence":"low","citations":[]}'
+            text = best["text"]
+            snippet = text[:100] + "..." if len(text) > 100 else text
             snippet = snippet.replace("\n", " ")
-            first_sentence = text.split(".")[0] + "." if "." in text else text
-            answer = f"Based on the provided context, {first_sentence}"
+            # Format as concise prose: extract relevant section, collapse newlines
+            answer = self._mock_format_answer(text, q_words)
+            # Use medium when match is weaker (1-2 keywords), high when strong (3+)
+            confidence = "high" if best_score >= 3 else "medium"
             return json.dumps({
-                "answer": answer[:300],
-                "confidence": "high",
-                "citations": [{"excerpt_id": 1, "source": source, "snippet": snippet}],
+                "answer": answer[:400],
+                "confidence": confidence,
+                "citations": [
+                    {"excerpt_id": best["id"], "source": best["source"], "snippet": snippet}
+                ],
             })
         # Fallback for unexpected format (e.g. tests)
         return '{"answer":"Based on the provided context, access keys must be rotated every 90 days.","confidence":"high","citations":[{"excerpt_id":1,"source":"policy.txt","snippet":"Access keys must be rotated every 90 days."}]}'
